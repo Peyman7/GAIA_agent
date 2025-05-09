@@ -6,11 +6,8 @@ GAIA (General-purpose AI Agent) is an intelligent agent framework designed to in
 
 ## 🚀 Features
 
-- Decomposes complex tasks into sub-tasks
 - Dynamically selects and uses tools
-- Integrates with LLMs via OpenAI or other providers
-- Modular node structure (e.g., `thought`, `decompose`, `tool_use`, `reasoning`, `validation`)
-
+- Integrates with LLMs via OpenAI
 ---
 
 ## 🛠️ Project Structure
@@ -44,8 +41,8 @@ Open `.env` and update the placeholder values. Example:
 
 ```env
 OPENAI_API_KEY=your-openai-key
-SERPAPI_API_KEY=your-serpapi-key
-# Add other keys as needed by your tools
+HUGGINGFACE_API_KEY=your-huggingface-key
+TAVILY_API_KEY=your-tavilyapi-key
 ```
 
 ---
