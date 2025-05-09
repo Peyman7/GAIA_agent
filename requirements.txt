@@ -1,0 +1,10 @@
+gradio
+langchain_core
+langchain_openai
+langchain_community
+langgraph
+openai
+pandas
+requests
+numexpr
+dotenv

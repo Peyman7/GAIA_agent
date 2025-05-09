@@ -7,8 +7,6 @@ from typing import List, Dict, Any, Optional
 import tempfile
 import requests
 from urllib.parse import urlparse
-import uuid
-import re
 import numexpr
 
 load_dotenv()
