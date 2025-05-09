@@ -1,0 +1,88 @@
+# 🤖 GAIA Agent
+
+GAIA (General-purpose AI Agent) is an intelligent agent framework designed to interact with users, decompose tasks, and use external tools via function calls. It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools.
+
+---
+
+## 🚀 Features
+
+- Decomposes complex tasks into sub-tasks
+- Dynamically selects and uses tools
+- Integrates with LLMs via OpenAI or other providers
+- Modular node structure (e.g., `thought`, `decompose`, `tool_use`, `reasoning`, `validation`)
+
+---
+
+## 🛠️ Project Structure
+
+```
+GAIA_agent/
+├── app.py                # Entry point for the agent
+├── agent/                # Agent core logic and node definitions
+├── tools/                # External tool wrappers (e.g., search, file reader)
+├── .env.example          # Example environment configuration
+├── requirements.txt      # Dependencies
+└── README.md             # This file
+```
+
+---
+
+## 🔐 Environment Setup
+
+You need to create a `.env` file in the root directory with your API keys and environment settings.
+
+### ✅ Step 1: Create your `.env` file
+
+Copy the sample:
+```bash
+cp .env.example .env
+```
+
+### ✅ Step 2: Add your API keys
+
+Open `.env` and update the placeholder values. Example:
+
+```env
+OPENAI_API_KEY=your-openai-key
+SERPAPI_API_KEY=your-serpapi-key
+# Add other keys as needed by your tools
+```
+
+---
+
+## 📦 Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Peyman7/GAIA_agent.git
+   cd GAIA_agent
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## 🧠 Running the Agent
+
+You can run the agent with:
+
+```bash
+python app.py
+```
+
+The agent will prompt for user input and begin reasoning using the defined node flow.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 📬 Contributing
+
+Pull requests and ideas are welcome! If you encounter any bugs or have suggestions, feel free to open an issue.
