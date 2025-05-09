@@ -1,6 +1,6 @@
 # 🤖 GAIA Agent
 
-GAIA (General-purpose AI Agent) is an intelligent agent framework designed to interact with users, decompose tasks, and use external tools via function calls. It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools.
+GAIA is a general AI agent framework designed to answer GAIA benchmark data ste questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is a HuggingFace Agent Course final project.
 
 ---
 
@@ -8,6 +8,7 @@ GAIA (General-purpose AI Agent) is an intelligent agent framework designed to in
 
 - Dynamically selects and uses tools
 - Integrates with LLMs via OpenAI
+- Deployed on Gradio app. 
 ---
 
 ## 🛠️ Project Structure
