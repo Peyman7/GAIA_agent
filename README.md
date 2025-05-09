@@ -14,11 +14,12 @@ GAIA (General-purpose AI Agent) is an intelligent agent framework designed to in
 
 ```
 GAIA_agent/
-├── app.py                # Entry point for the agent
-├── agent/                # Agent core logic and node definitions
-├── tools/                # External tool wrappers (e.g., search, file reader)
+├── app.py                # Entry point for running the agent
+├── agent/
+│   ├── agent.py          # Core agent logic and state management
+│   ├── tool_used.py      # Tool usage node and external tool handlers
+├── requirements.txt      # Python dependencies
 ├── .env.example          # Example environment configuration
-├── requirements.txt      # Dependencies
 └── README.md             # This file
 ```
 
