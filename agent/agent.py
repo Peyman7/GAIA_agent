@@ -13,23 +13,30 @@ from agent.tools_used import TOOLS
 load_dotenv()
 
 def create_graph():
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
     llm_with_tools = llm.bind_tools(TOOLS)
 
     def assistant_node(state: MessagesState):
-        task_id = state.get("task_id", "UNKNOWN_TASK_ID")
-        print('assistant_node_task_id: ', task_id)
+        
         system_prompt = """You are a helpful general AI assistant for anwering questions using tools provided. 
         I will ask you a question. Always consider the tools provided to you and use them if they are relevant to the question.
-        If you think a tool is relevant, use it. If you think multiple tools are relevant, use them all.
-        If the question references an image, document, or video file, you should assume it is already attached and available for download using the {task_id}`.
-        Do not invent or guess task_id; use the exact {task_id} provided in context.
+        If you think a tool is relevant, use it. 
+        If the question has an attachment file as image, document, or video file, you should try to download it. 
+        Do not invent or guess task_id; use the exact `task_id` provided in context.
         Report your thoughts step-by-step, and finish your answer with the following template:
 
         FINAL ANSWER: [YOUR FINAL ANSWER]
 
-        YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings.
-        Do not include additional commentary after the final answer line.
+        YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings. If you are asked for a string, don't use articles, neither abbreviations (e.g. for cities), and write the digits in plain text unless specified otherwise.
+        IMPORTANT: DO NOT include any units such as "USD", "$", "percent", "%", or currency names in your FINAL ANSWER unless the question explicitly asks for it.
+
+        The FINAL ANSWER must always be:
+            - A raw number (e.g., 89705, 4)
+            - A few words (e.g., big ripe strawberries)
+            - Or a comma-separated list (e.g., salt, big ripe strawberries, sugar)
+
+        Your answer must ONLY start with:
+        FINAL ANSWER: [your answer with NO additional text or units]
         """
 
         messages = state["messages"]

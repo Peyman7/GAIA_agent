@@ -3,7 +3,7 @@ import gradio as gr
 import requests
 import pandas as pd
 from agent.agent import create_graph
-from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage, HumanMessage
 import re
 import traceback
 
@@ -21,16 +21,16 @@ class GaiaAgent:
     def __call__(self, question: str, task_id: str = None) -> str:
         print(f"Agent received question: {question[:50]}...")
 
+        # Embed task_id into message content if present
+        if task_id:
+            question += f"\n\n(Task ID: {task_id})"
+
         initial_state = {
-            "messages": [{"role": "user", "content": question}],
-            "tools_used": [],
-            "memory": {},
+            "messages": [HumanMessage(content=question)],
+            #"tools_used": [],
+            #"memory": {},
             "task_id": task_id,
         }
-        if task_id:
-            initial_state["task_id"] = task_id
-            print(f"Task ID found: {task_id}")
-
         try:
             result_state = self.agent.invoke(initial_state, config={"recursion_limit": 20})
             print("=== RESULT STATE ===")
