@@ -1,17 +1,17 @@
-# 🤖 GAIA Agent
+# GAIA Agent
 
 GAIA is a general AI agent framework designed to answer GAIA benchmark data ste questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is a HuggingFace Agent Course final project.
 
 ---
 
-## 🚀 Features
+## Features
 
 - Dynamically selects and uses tools
 - Integrates with LLMs via OpenAI
 - Deployed on Gradio app. 
 ---
 
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 GAIA_agent/
@@ -26,7 +26,7 @@ GAIA_agent/
 
 ---
 
-## 🔐 Environment Setup
+## Environment Setup
 
 You need to create a `.env` file in the root directory with your API keys and environment settings.
 
@@ -49,7 +49,7 @@ TAVILY_API_KEY=your-tavilyapi-key
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. Clone the repository:
    ```bash
@@ -64,7 +64,7 @@ TAVILY_API_KEY=your-tavilyapi-key
 
 ---
 
-## 🧠 Running the Agent
+## Running the Agent
 
 You can run the agent with:
 
@@ -76,12 +76,9 @@ The agent will prompt for user input and begin reasoning using the defined node 
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 📬 Contributing
-
-Pull requests and ideas are welcome! If you encounter any bugs or have suggestions, feel free to open an issue.

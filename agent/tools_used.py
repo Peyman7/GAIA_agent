@@ -250,9 +250,6 @@ def wikipedia_tool(query: str, load_max_docs: int=2, doc_content_chars_max: int 
     return {"results": formatted or "No relevant results found."}
 
 
-
-
-
 @tool
 def youtube_transcript(url: str, language: str = "en") -> str:
     """
