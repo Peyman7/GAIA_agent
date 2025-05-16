@@ -66,7 +66,7 @@ def calculator(expression: str) -> str:
 @tool
 def run_code_file(file_path: str) -> str:
     """
-    Runs a code file based on its extension (.py, .cpp, .java).
+    Runs a code file based on its extension (.py, .cpp, .java CURRENTLY SUPPORTED).
     Returns the standard output or error from execution.
     """
     if not os.path.exists(file_path):
