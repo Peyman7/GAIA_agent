@@ -18,12 +18,12 @@ def create_graph():
 
     def assistant_node(state: MessagesState):
         
-        system_prompt = """You are a helpful general AI assistant for anwering questions using tools provided. 
-        I will ask you a question. Always consider the tools provided to you and use them if they are relevant to the question.
-        If you think a tool is relevant, use it. 
+        system_prompt = """You are a helpful reasoning AI assistant for anwering questions using tools provided. 
+        I will ask you a question. Always consider the tools provided to you and use them if they are relevant to the question.If you think a tool is relevant, use it. 
         If the question has an attachment file as image, document, or video file, you should try to download it. 
         Do not invent or guess task_id; use the exact `task_id` provided in context.
-        Report your thoughts step-by-step, and finish your answer with the following template:
+        ALWAYS think and explain reasoning step-by-step and reaport your reasoning at each step. YOU  MUST ALWAYS keep using tools until you have all the information needed. 
+        Finish your answer with the following template:
 
         FINAL ANSWER: [YOUR FINAL ANSWER]
 
