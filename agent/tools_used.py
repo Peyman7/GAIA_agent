@@ -13,8 +13,44 @@ import numexpr
 import openai
 import pandas as pd
 import subprocess
+import re
+import sys 
+from PIL import Image
+import pytesseract
+import base64
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+
 load_dotenv()
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+
+def _ensure_python_deps(py_file: str):
+    """
+    Scan a Python file for imports, and pip‑install any that aren’t already importable.
+    """
+    missing = set()
+    pattern = re.compile(r'^\s*(?:import\s+([a-zA-Z0-9_]+)|from\s+([a-zA-Z0-9_]+)\s+import)', re.MULTILINE)
+
+    with open(py_file, 'r', encoding='utf-8') as f:
+        code = f.read()
+
+    for imp, frm in pattern.findall(code):
+        pkg = imp or frm
+        try:
+            __import__(pkg)
+        except ImportError:
+            missing.add(pkg)
+
+    for pkg in missing:
+        print(f"[auto-install] {pkg} not found, installing…")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", pkg],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
 
 @tool
 def web_search(query: str, max_results: int = 3) -> str:
@@ -66,41 +102,97 @@ def calculator(expression: str) -> str:
 @tool
 def run_code_file(file_path: str) -> str:
     """
-    Runs a code file based on its extension (.py, .cpp, .java CURRENTLY SUPPORTED).
-    Returns the standard output or error from execution.
+    Runs a code file based on its extension.
+    Supported extensions:
+      - .py   : Python
+      - .cpp  : C++
+      - .java : Java
+      - .sql  : SQL (runs via sqlite3 against an in-memory DB)
+      - .cs   : C# (compiles via csc)
+    Args:
+        file_path: Path to the code file.
+    Returns:
+        The captured stdout, or compilation/runtime error text.
     """
     if not os.path.exists(file_path):
         return "Error: File does not exist."
 
-    file_ext = os.path.splitext(file_path)[1].lower()
-
+    ext = os.path.splitext(file_path)[1].lower()
     try:
-        if file_ext == ".py":
-            result = subprocess.run(["python", file_path], capture_output=True, text=True, check=True)
-            return result.stdout
+        # Python
+        if ext == ".py":
+            _ensure_python_deps(file_path)
+            proc = subprocess.run(
+                [sys.executable, file_path],
+                capture_output=True, text=True
+            )
+            return proc.stdout or proc.stderr
 
-        elif file_ext == ".cpp":
-            exe_path = file_path.replace(".cpp", "")
-            compile_result = subprocess.run(["g++", file_path, "-o", exe_path], capture_output=True, text=True)
-            if compile_result.returncode != 0:
-                return f"Compilation Error:\n{compile_result.stderr}"
-            run_result = subprocess.run([exe_path], capture_output=True, text=True)
-            return run_result.stdout
+        # C++
+        elif ext == ".cpp":
+            exe = file_path[:-4]
+            compile_proc = subprocess.run(
+                ["g++", file_path, "-o", exe],
+                capture_output=True, text=True
+            )
+            if compile_proc.returncode:
+                return f"Compilation Error:\n{compile_proc.stderr}"
+            run_proc = subprocess.run([exe], capture_output=True, text=True)
+            return run_proc.stdout or run_proc.stderr
 
-        elif file_ext == ".java":
-            class_dir = os.path.dirname(file_path)
-            compile_result = subprocess.run(["javac", file_path], capture_output=True, text=True)
-            if compile_result.returncode != 0:
-                return f"Compilation Error:\n{compile_result.stderr}"
-            class_name = os.path.splitext(os.path.basename(file_path))[0]
-            run_result = subprocess.run(["java", "-cp", class_dir, class_name], capture_output=True, text=True)
-            return run_result.stdout
+        # Java
+        elif ext == ".java":
+            dir_ = os.path.dirname(file_path) or "."
+            compile_proc = subprocess.run(
+                ["javac", file_path],
+                capture_output=True, text=True
+            )
+            if compile_proc.returncode:
+                return f"Compilation Error:\n{compile_proc.stderr}"
+            cls = os.path.splitext(os.path.basename(file_path))[0]
+            run_proc = subprocess.run(
+                ["java", "-cp", dir_, cls],
+                capture_output=True, text=True
+            )
+            return run_proc.stdout or run_proc.stderr
+
+        # SQL (SQLite)
+        elif ext == ".sql":
+            # Requires sqlite3 CLI installed.
+            # By default runs against an in-memory DB.
+            # To run against a file-based DB, replace ":memory:" with a path.
+            cmd = ["sqlite3", ":memory:", "-batch", f".read {file_path}"]
+            run_proc = subprocess.run(
+                " ".join(cmd),
+                shell=True, capture_output=True, text=True
+            )
+            return run_proc.stdout or run_proc.stderr
+
+        # C#
+        elif ext == ".cs":
+            exe = file_path[:-3] + (".exe" if os.name == "nt" else "")
+            # Compile with csc (Windows) or mcs (Mono)
+            compiler = "csc" if os.name == "nt" else "mcs"
+            compile_proc = subprocess.run(
+                [compiler, "-out:" + exe, file_path],
+                capture_output=True, text=True
+            )
+            if compile_proc.returncode:
+                return f"Compilation Error:\n{compile_proc.stderr}"
+            run_proc = subprocess.run(
+                [exe],
+                capture_output=True, text=True
+            )
+            return run_proc.stdout or run_proc.stderr
 
         else:
-            return "Error: Unsupported file extension. Supported: .py, .cpp, .java"
+            return (
+                "Error: Unsupported file extension.\n"
+                "Supported: .py, .cpp, .java, .sql, .cs"
+            )
 
     except Exception as e:
-        return f"Execution Error:\n{str(e)}"
+        return f"Execution Error:\n{e}"
 
 @tool
 def save_and_read_file(content: str, filename: Optional[str] = None) -> str:
@@ -244,7 +336,7 @@ def wikipedia_tool(query: str, load_max_docs: int=2, doc_content_chars_max: int 
     """Looks up a topic on Wikipedia and returns a summary and additional content for reasoning."""
     search_docs = WikipediaLoader(query=query, load_max_docs=2).load()
     formatted = "\n\n---\n\n".join([
-        f'<Document source="{doc.get("url", "")}">\n{doc.get("content", "")}\n</Document>'
+        f'<Document source="{doc.metadata.get("url", "")}">\n{doc.page_content[:doc_content_chars_max]}\n</Document>'
         for doc in search_docs
     ])
     return {"results": formatted or "No relevant results found."}
@@ -273,8 +365,24 @@ def youtube_transcript(url: str, language: str = "en") -> str:
     except Exception as e:
         return f"Error fetching YouTube transcript: {str(e)}"
 
+
+@tool
+def encode_image_to_base64(image_path):
+    """
+    Reads an image file (JPG or PNG) from the specified path and encodes it into a base64 string.
+
+    Args:
+        image_path (str): The file path to the image.
+
+    Returns:
+        str: A base64-encoded string representation of the image, suitable for embedding in image_url format.
+    """
+    with open(image_path, "rb") as image_file:
+        base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+    return base64_image
+
 # List of all tools
 TOOLS = [web_search, download_file_from_url, save_and_read_file, calculator, 
         analyze_table_file, run_code_file, transcribe_file,
-        wikipedia_tool, youtube_transcript
+        wikipedia_tool, youtube_transcript, encode_image_to_base64
         ]
