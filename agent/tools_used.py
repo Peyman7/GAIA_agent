@@ -3,12 +3,8 @@ import math
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_community.document_loaders import WikipediaLoader
-from langchain_community.document_loaders import YoutubeLoader
-from typing import List, Dict, Any, Optional
-import tempfile
+from langchain_community.document_loaders import WikipediaLoader, YoutubeLoader
 import requests
-from urllib.parse import urlparse
 import numexpr
 import openai
 import pandas as pd
@@ -18,11 +14,13 @@ import sys
 from PIL import Image
 import pytesseract
 import base64
+from pytubefix import YouTube
+import io 
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-
 load_dotenv()
+
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 
@@ -194,54 +192,59 @@ def run_code_file(file_path: str) -> str:
     except Exception as e:
         return f"Execution Error:\n{e}"
 
-@tool
-def save_and_read_file(content: str, filename: Optional[str] = None) -> str:
-    """
-    Save content to a file and return the path.
-    Args:
-        content (str): the content to save to the file
-        filename (str, optional): the name of the file. If not provided, a random name file will be created.
-    """
-    temp_dir = tempfile.gettempdir()
-    if filename is None:
-        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir)
-        filepath = temp_file.name
-    else:
-        filepath = os.path.join(temp_dir, filename)
-
-    with open(filepath, "w") as f:
-        f.write(content)
-
-    return f"File saved to {filepath}. You can read this file to process its contents."
-
-DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 
 @tool
-def download_file_from_url(task_id: str, url: str = None, save_dir: str = "downloads") -> str:
+def download_video_from_url(url: str = None, save_dir: str = "downloads") -> str:
     """
-    Downloads a file from a given URL (if provided) or builds a URL using task_id (if url is not available).
-    Saves the file with its original name if available in headers, else uses task_id.
+    Download a video file from a given link provided in the human message. If the user question DIRECTLY includes a link to a video file (e.g. a YouTube or HTTP URL), pass it to the 'url' argument.
     
-    Parameters:
-    - task_id: Unique identifier used to generate the URL if none is provided.
-    - url: Direct URL to the file. If None, the function builds a URL using task_id.
+    Args:
+    - url: The link or url to the file or video (e.g., YouTube) indicated DIRECTLY in the user question.
     - save_dir: Directory where the file will be saved.
 
     Returns:
     - The local path to the downloaded file.
     """
-    if not url:
-        if not task_id:
-            raise ValueError("Either a valid URL or task_id must be provided.")
-        url = f"https://agents-course-unit4-scoring.hf.space/files/{task_id}"
-
     os.makedirs(save_dir, exist_ok=True)
+
+    if url and "youtube.com" in url.lower():
+        try:
+            filename = url 
+            local_path = os.path.join(save_dir, filename)
+            yt = YouTube(url)
+            stream = yt.streams.filter(progressive=True, file_extension='mp4').get_highest_resolution()
+            video_path = stream.download(output_path=local_path)
+            print(f"Video downloaded to: {video_path}")
+            return video_path
+        except Exception as e:
+            raise ValueError(f"Failed to download YouTube video: {str(e)}")
+    else:
+        raise ValueError("Either a valid URL or task_id must be provided.")
+
+@tool
+def download_file_from_task_id(task_id: str,  save_dir: str = "downloads") -> str:
+    """
+    Download a file from the given task_id. if the user query refers to an attached file or document, pass the question task_id to the 'task_id' argument.
+    
+    Args:
+    - task_id: Unique identifier used to generate the URL if none is provided.
+    - save_dir: Directory where the file will be saved.
+
+    Returns:
+    - The local path to the downloaded file.
+    """
+
+    if not task_id:
+        raise ValueError("Either a valid URL or task_id must be provided.")
+    url = f"https://agents-course-unit4-scoring.hf.space/files/{task_id}"
 
     response = requests.get(url, stream=True)
     if response.status_code != 200:
         raise ValueError(f"Failed to download file from {url}. HTTP {response.status_code}")
 
     # Extract filename from headers if possible
+    os.makedirs(save_dir, exist_ok=True)
+
     content_disp = response.headers.get("Content-Disposition", "")
     filename = task_id  # Default filename
     if "filename=" in content_disp:
@@ -305,6 +308,8 @@ def analyze_table_file(file_path: str, query: str) -> str:
     Args:
         file_path (str): the path to the Excel file.
         query (str): Question about the data
+    Returns:
+        The result of the analysis.
     """
     try:
         _, ext = os.path.splitext(file_path)
@@ -333,7 +338,12 @@ def analyze_table_file(file_path: str, query: str) -> str:
 
 @tool
 def wikipedia_tool(query: str, load_max_docs: int=2, doc_content_chars_max: int = 4000) -> str:
-    """Looks up a topic on Wikipedia and returns a summary and additional content for reasoning."""
+    """Looks up a topic on Wikipedia and returns a summary and additional content for reasoning.
+    Args:
+        query: input query string
+    Returns:
+        A formatted string of search results.    
+    """
     search_docs = WikipediaLoader(query=query, load_max_docs=2).load()
     formatted = "\n\n---\n\n".join([
         f'<Document source="{doc.metadata.get("url", "")}">\n{doc.page_content[:doc_content_chars_max]}\n</Document>'
@@ -352,10 +362,10 @@ def youtube_transcript(url: str, language: str = "en") -> str:
         language (str): The language code for the transcript (default is "en").
     
     Returns:
-        str: The transcript of the video.
+        The transcript of the video.
     """
     try:
-        loader = YoutubeLoader.from_youtube_url(url=url, add_video_info=False, language=language)
+        loader = YoutubeLoader.from_youtube_url(url, add_video_info=False, language=language)
         transcript = loader.load()
         formatted = "\n\n---\n\n".join([
         f'<Document source="{doc.get("url", "")}">\n{doc.get("content", "")}\n</Document>'
@@ -367,22 +377,25 @@ def youtube_transcript(url: str, language: str = "en") -> str:
 
 
 @tool
-def encode_image_to_base64(image_path):
+def preprocess_image(image_path):
     """
-    Reads an image file (JPG or PNG) from the specified path and encodes it into a base64 string.
+    Preprocesses an image by resizing and encoding it in base64 format.
 
     Args:
-        image_path (str): The file path to the image.
+        image_path (str): The file path to the input image.
 
     Returns:
-        str: A base64-encoded string representation of the image, suitable for embedding in image_url format.
+        A base64-encoded string representation of the resized PNG image.
     """
-    with open(image_path, "rb") as image_file:
-        base64_image = base64.b64encode(image_file.read()).decode("utf-8")
-    return base64_image
+    with Image.open(image_path) as img:
+        img.thumbnail((128, 128))
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
+    
 # List of all tools
-TOOLS = [web_search, download_file_from_url, save_and_read_file, calculator, 
+TOOLS = [web_search, download_video_from_url, download_file_from_task_id, calculator, 
         analyze_table_file, run_code_file, transcribe_file,
-        wikipedia_tool, youtube_transcript, encode_image_to_base64
+        wikipedia_tool, youtube_transcript, preprocess_image, 
         ]
