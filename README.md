@@ -76,9 +76,5 @@ The agent will prompt for user input and begin reasoning using the defined node 
 
 ---
 
-## License
 
-This project is licensed under the MIT License.
-
----
 
