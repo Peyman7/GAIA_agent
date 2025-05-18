@@ -1,6 +1,6 @@
 # GAIA Agent
 
-GAIA is a general **AI agent** framework designed to answer **GAIA benchmark dataset** questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is the final project for Huggingface Agent Course. 
+GAIA is a general AI agent framework designed to answer GAIA benchmark dataset questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is the final project for the Huggingface Agent Course. 
 
 ---
 
