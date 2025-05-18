@@ -17,11 +17,13 @@ GAIA is a general AI agent framework designed to answer GAIA benchmark data ste 
 GAIA_agent/
 ├── app.py                # Entry point for running the agent
 ├── agent/
+│   ├── __init__.py       # Marks this directory as a Python package
 │   ├── agent.py          # Core agent logic and state management
+│   ├── system_prompt.txt # system prompt
 │   ├── tool_used.py      # Tool usage node and external tool handlers
 ├── requirements.txt      # Python dependencies
 ├── .env.example          # Example environment configuration
-└── README.md             # This file
+└── README.md             # README file
 ```
 
 ---
