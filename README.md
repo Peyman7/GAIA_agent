@@ -6,7 +6,7 @@ GAIA is a general AI agent framework designed to answer GAIA benchmark dataset q
 
 ## Features
 - **Workflow orchestration** via LangGraph and LangChain  
-- **Dynamic tool selection**, including web search, code execution, OCR, audio transcription, tabular data analysis, image processing, calculator and downloading tools
+- **Automatic tool selection**, dynamically choosing the appropriate tool (web search, code execution, OCR, audio transcription, tabular data analysis, image processing, downloading tools and etc.) based on the user question
 - **Seamless LLM integration** using OpenAI APIs  
 - **Gradio deployment** for an interactive web interface  
 ---
