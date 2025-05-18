@@ -1,14 +1,14 @@
 # GAIA Agent
 
-GAIA is a general AI agent framework designed to answer GAIA benchmark data ste questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is a HuggingFace Agent Course final project.
+GAIA is a general **AI agent** framework designed to answer **GAIA benchmark dataset** questions (Level 1). It’s built to support flexible and interactive multi-step workflows using LLMs, with environment-configurable access to APIs and tools. This is the final project for Huggingface Agent Course. 
 
 ---
 
 ## Features
-
-- Dynamically selects and uses tools
-- Integrates with LLMs via OpenAI
-- Deployed on Gradio app. 
+ **Workflow orchestration** via LangGraph and LangChain  
+- **Dynamic tool selection**, including web search, code execution, OCR, audio transcription, tabular data analysis, image processing, calculator and downloading tools
+- **Seamless LLM integration** using OpenAI APIs  
+- **Gradio deployment** for an interactive web interface  
 ---
 
 ## Project Structure
@@ -32,7 +32,7 @@ GAIA_agent/
 
 You need to create a `.env` file in the root directory with your API keys and environment settings.
 
-### ✅ Step 1: Create your `.env` file
+### Step 1: Create your `.env` file
 
 Copy the sample:
 ```bash
