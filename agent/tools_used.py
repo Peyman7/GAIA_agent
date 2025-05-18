@@ -395,7 +395,7 @@ def preprocess_image(image_path):
 @tool
 def processs_image_text(image_path: str) -> str:
     """
-    Given the local path to an image file, performs OCR using Tesseract to extract text information from an image.
+    Given the local path to an image file, performs OCR to extract text information from an image.
     Args:
         image_path (str): The file path to the input image.
     Returns:
@@ -414,7 +414,7 @@ def processs_image_text(image_path: str) -> str:
         return f"OCR failed: {e}"
     return text
 
-    
+
 # List of all tools
 TOOLS = [web_search, download_video_from_url, download_file_from_task_id, calculator, 
         analyze_table_file, run_code_file, transcribe_file,
