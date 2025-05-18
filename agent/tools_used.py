@@ -392,10 +392,31 @@ def preprocess_image(image_path):
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
         return base64.b64encode(buffer.getvalue()).decode("utf-8")
+@tool
+def processs_image_text(image_path: str) -> str:
+    """
+    Given the local path to an image file, performs OCR using Tesseract to extract text information from an image.
+    Args:
+        image_path (str): The file path to the input image.
+    Returns:
+        The extracted text from the image.
+    """
+    try:
+        img = Image.open(image_path)
+    except FileNotFoundError:
+        return f"Error: file not found at {image_path}"
+    except Exception as e:
+        return f"Error opening image: {e}"
+
+    try:
+        text = pytesseract.image_to_string(img)
+    except Exception as e:
+        return f"OCR failed: {e}"
+    return text
 
     
 # List of all tools
 TOOLS = [web_search, download_video_from_url, download_file_from_task_id, calculator, 
         analyze_table_file, run_code_file, transcribe_file,
-        wikipedia_tool, youtube_transcript, preprocess_image, 
+        wikipedia_tool, youtube_transcript, preprocess_image, processs_image_text
         ]
